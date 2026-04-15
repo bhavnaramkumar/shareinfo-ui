@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Info - Add User & Data</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--surface);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 600px;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            color: var(--primary);
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        h3 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1rem;
+            color: var(--text);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.5rem;
+        }
+
+        .nav-links {
+            text-align: left;
+            margin-bottom: 1rem;
+            display: flex; 
+            justify-content: space-between; 
+            gap: 10px; 
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        input, textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #334155;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .sub-panel {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .message-box {
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            animation: fadeIn 0.3s ease-out;
+            text-align: center;
+        }
+        .msg-error {
+            color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .msg-success {
+            color: var(--success);
+            background-color: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+        .msg-loading {
+            color: var(--text-muted);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="index.html">Lookup</a>
+            <a href="add-user.html" style="color: var(--text); border-bottom: 1px solid var(--primary);">Add User</a>
+            <a href="update-user.html">Update User</a>
+            <a href="all-users.html">All Data</a>
+            <a href="resume.html">Resume</a>
+        </div>
+        
+        <h1>Create Base User</h1>
+        
+        <form id="addUserForm" onsubmit="event.preventDefault(); submitUser();">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" id="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" id="lastName" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phoneNumber" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" required>
+                </div>
+            </div>
+            <button type="submit" id="submitBtn">Create User</button>
+        </form>
+
+        <div id="userMsg" class="message-box hidden"></div>
+
+        <hr style="border: 0; border-top: 1px dashed rgba(255,255,255,0.1); margin: 3rem 0 2rem 0;">
+
+        <h2>Add Portfolio Records</h2>
+        <div style="text-align: center; font-size: 0.85rem; color: var(--text-muted); margin-top: -1rem; margin-bottom: 2rem;">
+            Ensure you have the target <strong>User ID</strong> before appending records below.
+        </div>
+
+        <!-- EDUCATION FORM -->
+        <div class="sub-panel">
+            <h3>Add Education</h3>
+            <form id="eduForm" onsubmit="event.preventDefault(); submitSubForm('eduForm', '/education/', {
+                user_id: parseInt(document.getElementById('eduUid').value),
+                name: document.getElementById('eduName').value,
+                major: document.getElementById('eduMajor').value,
+                minor: document.getElementById('eduMinor').value,
+                gpa: parseFloat(document.getElementById('eduGpa').value)
+            }, 'btnEdu', 'msgEdu');">
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="number" id="eduUid" required>
+                </div>
+                <div class="form-group">
+                    <label>University Name</label>
+                    <input type="text" id="eduName" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Major</label>
+                        <input type="text" id="eduMajor" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Minor</label>
+                        <input type="text" id="eduMinor">
+                    </div>
+                    <div class="form-group">
+                        <label>GPA</label>
+                        <input type="number" step="0.01" id="eduGpa" required>
+                    </div>
+                </div>
+                <button type="submit" id="btnEdu" style="background-color: #3b82f6;">Submit Education</button>
+                <div id="msgEdu" class="message-box hidden"></div>
+            </form>
+        </div>
+
+        <!-- SKILLS FORM -->
+        <div class="sub-panel">
+            <h3>Add Skills</h3>
+            <form id="skillForm" onsubmit="event.preventDefault(); submitSubForm('skillForm', '/skill/', {
+                user_id: parseInt(document.getElementById('skillUid').value),
+                technical_skills: document.getElementById('skillTech').value,
+                soft_skills: document.getElementById('skillSoft').value
+            }, 'btnSkill', 'msgSkill');">
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="number" id="skillUid" required>
+                </div>
+                <div class="form-group">
+                    <label>Technical Skills (comma separated)</label>
+                    <input type="text" id="skillTech" required>
+                </div>
+                <div class="form-group">
+                    <label>Soft Skills (comma separated)</label>
+                    <input type="text" id="skillSoft">
+                </div>
+                <button type="submit" id="btnSkill" style="background-color: #10b981;">Submit Skills</button>
+                <div id="msgSkill" class="message-box hidden"></div>
+            </form>
+        </div>
+
+        <!-- PROJECTS FORM -->
+        <div class="sub-panel">
+            <h3>Add Project</h3>
+            <form id="projForm" onsubmit="event.preventDefault(); submitSubForm('projForm', '/project/', {
+                user_id: parseInt(document.getElementById('projUid').value),
+                name: document.getElementById('projName').value,
+                description: document.getElementById('projDesc').value
+            }, 'btnProj', 'msgProj');">
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="number" id="projUid" required>
+                </div>
+                <div class="form-group">
+                    <label>Project Name</label>
+                    <input type="text" id="projName" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="projDesc" required></textarea>
+                </div>
+                <button type="submit" id="btnProj" style="background-color: #f59e0b;">Submit Project</button>
+                <div id="msgProj" class="message-box hidden"></div>
+            </form>
+        </div>
+
+        <!-- EXPERIENCE FORM -->
+        <div class="sub-panel">
+            <h3>Add Experience</h3>
+            <form id="expForm" onsubmit="event.preventDefault(); submitSubForm('expForm', '/experience/', {
+                user_id: parseInt(document.getElementById('expUid').value),
+                work_place: document.getElementById('expWork').value,
+                location: document.getElementById('expLoc').value,
+                job_title: document.getElementById('expTitle').value,
+                start_date: document.getElementById('expStart').value,
+                end_date: document.getElementById('expEnd').value,
+                job_description: document.getElementById('expDesc').value
+            }, 'btnExp', 'msgExp');">
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="number" id="expUid" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Company / Workplace</label>
+                        <input type="text" id="expWork" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="expLoc" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Job Title</label>
+                    <input type="text" id="expTitle" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" id="expStart" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" id="expEnd">
+                        <label style="font-weight:normal; font-size:0.85rem; margin-top:0.4rem; display:flex; align-items:center; gap:0.5rem; color:var(--text-muted); cursor:pointer;">
+                            <input type="checkbox" style="width:auto; margin:0; padding:0; cursor:pointer;" onchange="document.getElementById('expEnd').disabled = this.checked; if(this.checked) document.getElementById('expEnd').value = '';"> Still Working
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Job Description</label>
+                    <textarea id="expDesc"></textarea>
+                </div>
+                <button type="submit" id="btnExp" style="background-color: #8b5cf6;">Submit Experience</button>
+                <div id="msgExp" class="message-box hidden"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        function showMessage(id, text, type) {
+            const el = document.getElementById(id);
+            el.className = 'message-box msg-' + type;
+            el.textContent = text;
+        }
+        function hideMessage(id) {
+            document.getElementById(id).className = 'hidden';
+        }
+
+        async function submitUser() {
+            const payload = {
+                first_name: document.getElementById('firstName').value.trim(),
+                last_name: document.getElementById('lastName').value.trim(),
+                phonenumber: document.getElementById('phoneNumber').value.trim(),
+                email: document.getElementById('email').value.trim()
+            };
+
+            hideMessage('userMsg');
+            showMessage('userMsg', 'Creating user...', 'loading');
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users/`, {
+                    method: 'POST',
+                    headers: { 'accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `Failed to create: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                showMessage('userMsg', `User Created! ID is ${data.id}. Copy this ID to add records below.`, 'success');
+                document.getElementById('addUserForm').reset();
+            } catch (err) {
+                showMessage('userMsg', err.message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        }
+
+        // Generic re-usable sub-form handler
+        async function submitSubForm(formId, endpointPath, payload, btnId, msgId) {
+            hideMessage(msgId);
+            showMessage(msgId, 'Submitting...', 'loading');
+            const btn = document.getElementById(btnId);
+            btn.disabled = true;
+
+            // Cleanse payload of empty strings and NaNs to avoid crashing the backend schema
+            Object.keys(payload).forEach(key => {
+                if (payload[key] === '' || Number.isNaN(payload[key]) || payload[key] === null) {
+                    delete payload[key];
+                }
+            });
+
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpointPath}`, {
+                    method: 'POST',
+                    headers: { 'accept': 'application/json', 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.detail || `Submission failed: ${response.statusText}`);
+                }
+
+                showMessage(msgId, `Record successfully added!`, 'success');
+                document.getElementById(formId).reset();
+            } catch (err) {
+                showMessage(msgId, err.message, 'error');
+            } finally {
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

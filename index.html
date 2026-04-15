@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Info - User Lookup</title>
+    <!-- Use a modern font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--surface);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #loading {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        #error {
+            color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .info-row {
+            margin-bottom: 0.75rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            font-weight: 500;
+            word-break: break-all;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="nav-links" style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap;">
+            <a href="index.html" style="color: var(--text); border-bottom: 1px solid var(--primary);">Lookup</a>
+            <a href="add-user.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">Add User</a>
+            <a href="update-user.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">Update User</a>
+            <a href="all-users.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">All Data</a>
+            <a href="resume.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">Resume</a>
+        </div>
+        <h1>User Lookup</h1>
+        <div class="input-group">
+            <input type="text" id="userId" placeholder="Enter User ID" autocomplete="off">
+            <button onclick="fetchUserInfo()" id="searchBtn">Find</button>
+        </div>
+
+        <div id="loading" class="hidden">Fetching details...</div>
+        <div id="error" class="hidden"></div>
+
+        <div id="userInfo" class="hidden glass-panel">
+            <!-- User details will be injected here dynamically -->
+        </div>
+
+        <hr style="border: none; border-top: 1px solid rgba(255, 255, 255, 0.1); margin: 2.5rem 0;">
+
+        <h2 style="margin-top: 0; margin-bottom: 1.5rem; font-size: 1.5rem; font-weight: 600; text-align: center;">Delete User</h2>
+        <div class="input-group">
+            <input type="text" id="deleteUserId" placeholder="Enter User ID to Delete" autocomplete="off">
+            <button onclick="deleteUserRow()" id="deleteBtn" style="background-color: var(--danger);">Delete</button>
+        </div>
+        <div id="deleteLoading" style="text-align: center; color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1rem;" class="hidden">Sending delete request...</div>
+        <div id="deleteError" class="hidden" style="color: var(--danger); background-color: rgba(239, 68, 68, 0.1); padding: 0.75rem; border-radius: 0.5rem; border: 1px solid rgba(239, 68, 68, 0.2); animation: fadeIn 0.3s ease-out; margin-bottom: 1rem; text-align: center;"></div>
+        <div id="deleteResult" class="hidden glass-panel" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.2); text-align: center; color: #10b981; font-weight: 600;"></div>
+    </div>
+
+    <script>
+        // Use your FastAPI backend URL here (Based on the curl reference, we use 127.0.0.1)
+        // I noticed from previous conversations you were working on a FastAPI backend 
+        // with User models and schemas, this URL assumes that's where the backend is hosted.
+        const API_BASE_URL = 'http://127.0.0.1:8000';
+
+        async function fetchUserInfo() {
+            const userIdInput = document.getElementById('userId');
+            const userId = userIdInput.value.trim();
+
+            if (!userId) {
+                showError('Please enter a User ID');
+                return;
+            }
+
+            // Reset UI states
+            hideElement('error');
+            hideElement('userInfo');
+            showElement('loading');
+            document.getElementById('searchBtn').disabled = true;
+
+            try {
+                // Adjust the path to match your specific FastAPI endpoint for retrieving a user
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'accept': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('User not found. Please try another ID.');
+                    }
+                    throw new Error(`Failed to fetch: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                renderUserInfo(data);
+            } catch (err) {
+                // Note: If you get a "Failed to fetch" error it's likely a CORS issue,
+                // Make sure your FastAPI backend uses CORSMiddleware to allow this origin
+                if (err.message.includes('Failed to fetch')) {
+                    showError('Failed to connect to the server. Is the FastAPI backend running (on port 8000) and configured for CORS?');
+                } else {
+                    showError(err.message);
+                }
+            } finally {
+                hideElement('loading');
+                document.getElementById('searchBtn').disabled = false;
+            }
+        }
+
+        function renderUserInfo(user) {
+            const userInfoDiv = document.getElementById('userInfo');
+            userInfoDiv.innerHTML = '';
+
+            // We iterate dynamically over the properties returned in your JSON
+            for (const key in user) {
+                if (user[key] !== undefined && user[key] !== null) {
+                    const row = document.createElement('div');
+                    row.className = 'info-row';
+
+                    const label = document.createElement('span');
+                    label.className = 'info-label';
+                    // Convert snake_case or standard labels to readable text
+                    label.textContent = key.replace(/_/g, ' ');
+
+                    const value = document.createElement('span');
+                    value.className = 'info-value';
+
+                    // Format arrays (like the "skills" list) nicely
+                    if (Array.isArray(user[key])) {
+                        value.textContent = user[key].join(', ');
+                    } else if (typeof user[key] === 'object') {
+                        value.textContent = JSON.stringify(user[key]);
+                    } else {
+                        value.textContent = user[key];
+                    }
+
+                    row.appendChild(label);
+                    row.appendChild(value);
+                    userInfoDiv.appendChild(row);
+                }
+            }
+
+            const currentUserId = document.getElementById('userId').value.trim();
+            if (currentUserId) {
+                const actionRow = document.createElement('div');
+                actionRow.style.marginTop = '1.5rem';
+                actionRow.style.textAlign = 'center';
+                
+                const eduButton = document.createElement('a');
+                eduButton.href = `resume.html?userId=${currentUserId}`;
+                eduButton.textContent = 'View Resume';
+                eduButton.style.display = 'inline-block';
+                eduButton.style.backgroundColor = 'transparent';
+                eduButton.style.color = 'var(--text)';
+                eduButton.style.padding = '0.5rem 1rem';
+                eduButton.style.borderRadius = '0.5rem';
+                eduButton.style.textDecoration = 'none';
+                eduButton.style.border = '1px solid var(--primary)';
+                eduButton.style.fontSize = '0.9rem';
+                eduButton.style.fontWeight = '500';
+                eduButton.style.transition = 'all 0.2s';
+                
+                eduButton.onmouseover = () => { eduButton.style.backgroundColor = 'var(--primary)'; };
+                eduButton.onmouseout = () => { eduButton.style.backgroundColor = 'transparent'; };
+
+                actionRow.appendChild(eduButton);
+                userInfoDiv.appendChild(actionRow);
+            }
+
+            showElement('userInfo');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            showElement('error');
+        }
+
+        function showElement(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function hideElement(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        // Add support for pressing enter in the input field
+        document.getElementById('userId').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                fetchUserInfo();
+            }
+        });
+
+        // Delete User Logic
+        async function deleteUserRow() {
+            const userIdInput = document.getElementById('deleteUserId');
+            const userId = userIdInput.value.trim();
+
+            if (!userId) {
+                const errDiv = document.getElementById('deleteError');
+                errDiv.textContent = 'Please enter a User ID to delete.';
+                showElement('deleteError');
+                return;
+            }
+
+            if (!confirm(`Warning: Are you certain you want to permanently delete User ID ${userId}?`)) {
+                return;
+            }
+
+            hideElement('deleteError');
+            hideElement('deleteResult');
+            showElement('deleteLoading');
+            
+            const deleteBtn = document.getElementById('deleteBtn');
+            deleteBtn.disabled = true;
+
+            try {
+                // Perform the DELETE request exactly as requested
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'accept': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error('User not found or already deleted.');
+                    } else if (response.status === 405) {
+                        throw new Error('Method Not Allowed (Check Backend CORS/Route setup)');
+                    }
+                    throw new Error(`Failed to delete: ${response.statusText}`);
+                }
+
+                // Show success
+                const deleteResult = document.getElementById('deleteResult');
+                deleteResult.innerHTML = `User ID <strong>${userId}</strong> deleted successfully!`;
+                showElement('deleteResult');
+                
+                // Clear input
+                userIdInput.value = '';
+                
+            } catch (err) {
+                const errDiv = document.getElementById('deleteError');
+                if (err.message.includes('Failed to fetch')) {
+                    errDiv.innerHTML = 'Network Error. Double check backend is running on 8000. If CORS is failing, make sure allow_methods=["*"] is set serverside.';
+                } else {
+                    errDiv.textContent = err.message;
+                }
+                showElement('deleteError');
+            } finally {
+                hideElement('deleteLoading');
+                deleteBtn.disabled = false;
+            }
+        }
+    </script>
+</body>
+
+</html>

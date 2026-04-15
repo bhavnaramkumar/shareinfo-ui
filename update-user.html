@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Info - Update User</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--surface);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            width: 100%;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #334155;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #loading {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        #error {
+            color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            animation: fadeIn 0.3s ease-out;
+            text-align: center;
+        }
+
+        .glass-panel {
+            background: rgba(16, 185, 129, 0.05); /* slightly green */
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-top: 1.25rem;
+            animation: fadeIn 0.4s ease-out;
+            text-align: center;
+        }
+
+        .success-title {
+            color: var(--success);
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .success-body {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-links" style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap;">
+            <a href="index.html">Lookup</a>
+            <a href="add-user.html">Add User</a>
+            <a href="update-user.html" style="color: var(--text); border-bottom: 1px solid var(--primary);">Update User</a>
+            <a href="all-users.html">All Data</a>
+            <a href="resume.html">Resume</a>
+        </div>
+        
+        <h1>Update User Information</h1>
+        
+        <form id="updateUserForm" onsubmit="event.preventDefault(); submitUpdate();">
+            <div class="form-group" style="flex-direction: row; align-items: flex-end; gap: 0.75rem;">
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem;">
+                    <label for="userId">User ID to update (Required)</label>
+                    <input type="text" id="userId" placeholder="13" required>
+                </div>
+                <button type="button" onclick="fetchCurrentInfo()" id="fetchBtn" style="width: auto; margin-top: 0; background-color: var(--text-muted); padding: 0.75rem 1rem;">Fetch Info</button>
+            </div>
+            
+            <div id="oldInfoPanel" class="hidden glass-panel" style="margin-top: 0; margin-bottom: 1.5rem; text-align: left; background: rgba(255, 255, 255, 0.03); border-color: rgba(255, 255, 255, 0.05); padding: 1.25rem;"></div>
+
+            <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                Only fill in the fields you wish to update. Leave others blank.
+            </p>
+
+            <div class="form-group">
+                <label for="firstName">New First Name</label>
+                <input type="text" id="firstName" placeholder="Tony">
+            </div>
+            
+            <div class="form-group">
+                <label for="lastName">New Last Name</label>
+                <input type="text" id="lastName" placeholder="Stark">
+            </div>
+
+            <div class="form-group">
+                <label for="phoneNumber">New Phone Number</label>
+                <input type="tel" id="phoneNumber" placeholder="1234567890">
+            </div>
+
+            <div class="form-group">
+                <label for="email">New Email Address</label>
+                <input type="email" id="email" placeholder="tony@example.com">
+            </div>
+
+            <button type="submit" id="submitBtn">Update User</button>
+        </form>
+
+        <div id="loading" class="hidden">Updating user...</div>
+        <div id="error" class="hidden"></div>
+        
+        <div id="success" class="hidden glass-panel">
+            <div class="success-title">User Updated Successfully!</div>
+            <div id="successInfo" class="success-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Matching your curl backend route
+        const API_BASE_URL = 'http://localhost:8000';
+
+        async function fetchCurrentInfo() {
+            const userId = document.getElementById('userId').value.trim();
+            if (!userId) {
+                showError("Please enter a User ID first.");
+                return;
+            }
+
+            hideElement('error');
+            hideElement('success');
+            showElement('loading');
+            document.getElementById('loading').textContent = "Fetching current info...";
+            
+            const fetchBtn = document.getElementById('fetchBtn');
+            fetchBtn.disabled = true;
+
+            try {
+                // Fetch the user information first
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                    method: 'GET',
+                    headers: { 'accept': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 404) throw new Error(`User ID ${userId} not found.`);
+                    throw new Error(`Failed to fetch: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                
+                // Render old info visually in a separate block instead of overriding the inputs
+                const panel = document.getElementById('oldInfoPanel');
+                panel.innerHTML = '<div style="font-weight: 600; color: var(--primary); margin-bottom: 1rem; font-size: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.5rem;">Current Record:</div>';
+                
+                for (const key in data) {
+                    if (data[key] !== undefined && data[key] !== null) {
+                        const row = document.createElement('div');
+                        row.style.display = 'flex';
+                        row.style.justifyContent = 'space-between';
+                        row.style.marginBottom = '0.5rem';
+                        row.style.fontSize = '0.9rem';
+                        
+                        const label = document.createElement('span');
+                        label.style.color = 'var(--text-muted)';
+                        label.style.textTransform = 'capitalize';
+                        label.textContent = key.replace(/_/g, ' ');
+                        
+                        const val = document.createElement('span');
+                        val.style.fontWeight = '500';
+                        val.textContent = Array.isArray(data[key]) ? data[key].join(', ') : data[key];
+                        
+                        row.appendChild(label);
+                        row.appendChild(val);
+                        panel.appendChild(row);
+                    }
+                }
+                showElement('oldInfoPanel');
+                
+                // Dynamically update the placeholders with the current info
+                if (data.first_name) document.getElementById('firstName').placeholder = data.first_name;
+                if (data.last_name) document.getElementById('lastName').placeholder = data.last_name;
+                if (data.phonenumber) document.getElementById('phoneNumber').placeholder = data.phonenumber;
+                if (data.email) document.getElementById('email').placeholder = data.email;
+                
+            } catch (err) {
+                if (err.message.includes('Failed to fetch')) {
+                    showError('Failed to connect to the server (port 8000).');
+                } else {
+                    showError(err.message);
+                }
+            } finally {
+                hideElement('loading');
+                fetchBtn.disabled = false;
+                document.getElementById('loading').textContent = "Updating user...";
+            }
+        }
+
+        async function submitUpdate() {
+            // Retrieve field values
+            const userId = document.getElementById('userId').value.trim();
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const email = document.getElementById('email').value.trim();
+
+            if (!userId) {
+                showError("User ID is required to perform an update.");
+                return;
+            }
+
+            // Prepare payload using only fields that were typed in
+            const payload = {};
+            if (firstName) payload.first_name = firstName;
+            if (lastName) payload.last_name = lastName;
+            if (phoneNumber) payload.phonenumber = phoneNumber;
+            if (email) payload.email = email;
+
+            if (Object.keys(payload).length === 0) {
+                showError("Please fill out at least one field to update.");
+                return;
+            }
+
+            // Reset UI states
+            hideElement('error');
+            hideElement('success');
+            showElement('loading');
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+
+            try {
+                // Using PUT as referenced in the instructions
+                const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    let errorMessage = `Failed to update: ${response.statusText}`;
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                            if (typeof errorData.detail === 'string') {
+                                errorMessage = errorData.detail;
+                            } else if (Array.isArray(errorData.detail)) {
+                                errorMessage = errorData.detail.map(e => e.msg).join(', ');
+                            }
+                        }
+                    } catch (e) {
+                        // ignore if no json body
+                    }
+                    if(response.status === 404) {
+                        throw new Error(`User ID ${userId} not found.`);
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                // Show success
+                const data = await response.json();
+                const successInfo = document.getElementById('successInfo');
+                document.querySelector('.success-title').textContent = "User Updated Successfully!";
+                successInfo.textContent = `User ID ${userId} was successfully updated.`;
+                showElement('success');
+                
+                // Optional: clear the form fields on success to reset the form
+                document.getElementById('updateUserForm').reset();
+                
+                // Reset the placeholders back to default generic values
+                document.getElementById('firstName').placeholder = "Tony";
+                document.getElementById('lastName').placeholder = "Stark";
+                document.getElementById('phoneNumber').placeholder = "1234567890";
+                document.getElementById('email').placeholder = "tony@example.com";
+                
+                hideElement('oldInfoPanel');
+
+            } catch (err) {
+                if (err.message.includes('Failed to fetch')) {
+                    showError('Failed to connect to the server. Check if backend is running on port 8000.');
+                } else {
+                    showError(err.message);
+                }
+            } finally {
+                hideElement('loading');
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            showElement('error');
+        }
+
+        function showElement(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function hideElement(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

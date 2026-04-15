@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Info - User Resume</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body {
+            margin: 0;
+            padding: 2rem 0;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--surface);
+            padding: 2.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 650px;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.75rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: none;
+            background-color: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            background-color: #334155;
+            color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #loading {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            font-size: 0.875rem;
+        }
+
+        #error {
+            color: var(--danger);
+            background-color: rgba(239, 68, 68, 0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            font-size: 0.875rem;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            animation: fadeIn 0.3s ease-out;
+            text-align: center;
+        }
+
+        .resume-panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-top: 1.25rem;
+            animation: fadeIn 0.4s ease-out;
+            text-align: left;
+        }
+
+        .resume-header {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .resume-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            text-transform: capitalize;
+        }
+
+        .resume-contact {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .section-title {
+            color: var(--primary);
+            font-weight: 600;
+            font-size: 1.15rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Lists */
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .card-item {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .card-item-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+            text-transform: capitalize;
+        }
+
+        .card-item-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .card-item-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Skills specific */
+        .skills-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .skill-badge {
+            background-color: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+
+        .empty-state {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="nav-links">
+            <a href="index.html">Lookup</a>
+            <a href="add-user.html">Add User</a>
+            <a href="update-user.html">Update User</a>
+            <a href="all-users.html">All Data</a>
+            <a href="resume.html" style="color: var(--text); border-bottom: 1px solid var(--primary);">Resume</a>
+        </div>
+
+        <h1>User Resume</h1>
+        <div class="input-group">
+            <input type="text" id="userId" placeholder="Enter User ID" autocomplete="off">
+            <button onclick="fetchResume()" id="searchBtn">Generate Resume</button>
+        </div>
+
+        <div id="loading" class="hidden">Assembling resume across 5 endpoints...</div>
+        <div id="error" class="hidden"></div>
+
+        <div id="resumeContent" class="hidden resume-panel">
+            <!-- Dynamically injected -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Auto-run if URL has ?userId=XY
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const passedId = urlParams.get('userId');
+            if (passedId) {
+                document.getElementById('userId').value = passedId;
+                fetchResume();
+            }
+        });
+
+        // Add support for pressing enter
+        document.getElementById('userId').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                fetchResume();
+            }
+        });
+
+        async function fetchResume() {
+            const userIdInput = document.getElementById('userId');
+            const userId = userIdInput.value.trim();
+
+            if (!userId) {
+                showError("Please enter a valid User ID");
+                return;
+            }
+
+            hideElement('error');
+            hideElement('resumeContent');
+            showElement('loading');
+            document.getElementById('searchBtn').disabled = true;
+
+            try {
+                // Fire all 5 GET requests dynamically in pure parallel
+                const endpoints = [
+                    fetch(`${API_BASE_URL}/users/${userId}`, { headers: { 'accept': 'application/json' } }),
+                    fetch(`${API_BASE_URL}/users/${userId}/skill`, { headers: { 'accept': 'application/json' } }),
+                    fetch(`${API_BASE_URL}/users/${userId}/experience`, { headers: { 'accept': 'application/json' } }),
+                    fetch(`${API_BASE_URL}/users/${userId}/project`, { headers: { 'accept': 'application/json' } }),
+                    fetch(`${API_BASE_URL}/users/${userId}/education`, { headers: { 'accept': 'application/json' } })
+                ];
+
+                const results = await Promise.allSettled(endpoints);
+
+                // Helper to gracefully extract JSON or return null if 404/Failed
+                const extractData = async (result) => {
+                    if (result.status === 'fulfilled' && result.value.ok) {
+                        return await result.value.json();
+                    }
+                    return null;
+                };
+
+                const userInfo = await extractData(results[0]);
+                const skills = await extractData(results[1]);
+                const exp = await extractData(results[2]);
+                const projects = await extractData(results[3]);
+                const edu = await extractData(results[4]);
+
+                if (!userInfo && !skills && !exp && !projects && !edu) {
+                    throw new Error(`Could not find any records (or User Data) for User ID ${userId}.`);
+                }
+
+                renderResume(userId, userInfo, skills, exp, projects, edu);
+            } catch (err) {
+                if (err.message.includes('fetch')) {
+                    showError('Failed to connect. Is FastAPI running on port 8000?');
+                } else {
+                    showError(err.message);
+                }
+            } finally {
+                hideElement('loading');
+                document.getElementById('searchBtn').disabled = false;
+            }
+        }
+
+        // Normalizer function to ensure we always work with Arrays for sub-lists
+        function ensureArray(data) {
+            if (!data) return [];
+            if (Array.isArray(data)) return data;
+            if (typeof data === 'object' && Object.keys(data).length > 0) return [data];
+            return [];
+        }
+
+        function renderResume(userId, userInfo, skillsData, expData, projData, eduData) {
+            const container = document.getElementById('resumeContent');
+            let html = '';
+
+            // --- HDR: USER INFO ---
+            html += `<div class="resume-header">`;
+            if (userInfo) {
+                const name = [userInfo.first_name, userInfo.last_name].filter(Boolean).join(' ') || `Candidate Profile`;
+                html += `<div class="resume-name">${name}</div>`;
+
+                html += `<div class="resume-contact">`;
+                if (userInfo.email) html += `<span>📧 ${userInfo.email}</span>`;
+                if (userInfo.phonenumber) html += `<span>📱 ${userInfo.phonenumber}</span>`;
+                html += `</div>`;
+            } else {
+                html += `<div class="resume-name">Candidate Profile</div>`;
+                html += `<div class="resume-contact"><em>Base profile details missing</em></div>`;
+            }
+            html += `</div>`;
+
+            // --- SECTION: SKILLS ---
+            html += `<div class="section-title">Skills</div>`;
+            const skillsList = ensureArray(skillsData);
+            if (skillsList.length > 0) {
+                let techSkills = [];
+                let softSkills = [];
+                let otherSkills = [];
+
+                skillsList.forEach(s => {
+                    for (let key in s) {
+                        if (key === 'id' || key === 'user_id' || key === 'userid') continue;
+
+                        let val = s[key];
+                        if (!val) continue;
+
+                        let lowerKey = key.toLowerCase();
+
+                        // Splitting values on comma allows users to store multiple skills in one string "Python, Java" safely
+                        let badges = String(val).split(',').map(str => str.trim()).filter(Boolean);
+
+                        // Group based on the key name itself
+                        if (lowerKey.includes('tech')) {
+                            techSkills.push(...badges);
+                        } else if (lowerKey.includes('soft')) {
+                            softSkills.push(...badges);
+                        } else {
+                            otherSkills.push(...badges);
+                        }
+                    }
+                });
+
+                if (techSkills.length > 0) {
+                    html += `<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; margin-top: 0.5rem; text-transform: uppercase;">Technical</div>`;
+                    html += `<div class="skills-container" style="margin-bottom: 1rem;">`;
+                    techSkills.forEach(sn => html += `<div class="skill-badge">${sn}</div>`);
+                    html += `</div>`;
+                }
+
+                if (softSkills.length > 0) {
+                    html += `<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; margin-top: 0.5rem; text-transform: uppercase;">Soft Skills</div>`;
+                    html += `<div class="skills-container" style="margin-bottom: 1rem;">`;
+                    softSkills.forEach(sn => html += `<div class="skill-badge" style="background-color: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3);">${sn}</div>`);
+                    html += `</div>`;
+                }
+
+                if (otherSkills.length > 0) {
+                    if (techSkills.length > 0 || softSkills.length > 0) {
+                        html += `<div style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 0.5rem; margin-top: 0.5rem; text-transform: uppercase;">Other</div>`;
+                    }
+                    html += `<div class="skills-container" style="margin-bottom: 1rem;">`;
+                    otherSkills.forEach(sn => html += `<div class="skill-badge">${sn}</div>`);
+                    html += `</div>`;
+                }
+
+                if (techSkills.length === 0 && softSkills.length === 0 && otherSkills.length === 0) {
+                    html += `<div class="empty-state">No skills listed.</div>`;
+                }
+            } else {
+                html += `<div class="empty-state">No skills listed.</div>`;
+            }
+
+            // --- SECTION: EXPERIENCE ---
+            html += `<div class="section-title">Experience</div>`;
+            const expList = ensureArray(expData);
+            if (expList.length > 0) {
+                html += `<div class="card-list">`;
+                expList.forEach(e => {
+                    html += `<div class="card-item">`;
+                    Object.keys(e).forEach(k => {
+                        if (k === 'id' || k === 'user_id' || k === 'userid') return;
+                        if (e[k]) {
+                            html += `<div class="card-item-subtitle"><strong style="color:var(--text); text-transform:capitalize;">${k.replace(/_/g, ' ')}:</strong> ${e[k]}</div>`;
+                        }
+                    });
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="empty-state">No work experience listed.</div>`;
+            }
+
+            // --- SECTION: PROJECTS ---
+            html += `<div class="section-title">Projects</div>`;
+            const projList = ensureArray(projData);
+            if (projList.length > 0) {
+                html += `<div class="card-list">`;
+                projList.forEach(p => {
+                    html += `<div class="card-item">`;
+                    Object.keys(p).forEach(k => {
+                        if (k === 'id' || k === 'user_id' || k === 'userid') return;
+                        if (p[k]) {
+                            html += `<div class="card-item-subtitle"><strong style="color:var(--text); text-transform:capitalize;">${k.replace(/_/g, ' ')}:</strong> ${p[k]}</div>`;
+                        }
+                    });
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="empty-state">No projects listed.</div>`;
+            }
+
+            // --- SECTION: EDUCATION ---
+            html += `<div class="section-title">Education</div>`;
+            const eduList = ensureArray(eduData);
+            if (eduList.length > 0) {
+                html += `<div class="card-list">`;
+                eduList.forEach(ed => {
+                    html += `<div class="card-item">`;
+                    Object.keys(ed).forEach(k => {
+                        if (k === 'id' || k === 'user_id' || k === 'userid') return;
+                        if (ed[k]) {
+                            html += `<div class="card-item-subtitle"><strong style="color:var(--text); text-transform:capitalize;">${k.replace(/_/g, ' ')}:</strong> ${ed[k]}</div>`;
+                        }
+                    });
+                    html += `</div>`;
+                });
+                html += `</div>`;
+            } else {
+                html += `<div class="empty-state">No education listed.</div>`;
+            }
+
+            container.innerHTML = html;
+            showElement('resumeContent');
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            showElement('error');
+        }
+
+        function showElement(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function hideElement(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+    </script>
+</body>
+
+</html>
