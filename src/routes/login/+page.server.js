@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { ADMIN_USERNAME, ADMIN_PASSWORD, SESSION_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 
 export const actions = {
 	default: async ({ request, cookies }) => {
@@ -8,13 +8,13 @@ export const actions = {
 		const password = data.get('password');
 
 		console.log('got:', JSON.stringify(username), JSON.stringify(password));
-		console.log('exp:', JSON.stringify(ADMIN_USERNAME), JSON.stringify(ADMIN_PASSWORD));
+		console.log('exp:', JSON.stringify(env.ADMIN_USERNAME), JSON.stringify(env.ADMIN_PASSWORD));
 
-		if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+		if (username !== env.ADMIN_USERNAME || password !== env.ADMIN_PASSWORD) {
 			return fail(401, { error: 'Invalid username or password.' });
 		}
 
-		cookies.set('session', SESSION_SECRET, {
+		cookies.set('session', env.SESSION_SECRET, {
 			path: '/',
 			httpOnly: true,
 			sameSite: 'strict',
