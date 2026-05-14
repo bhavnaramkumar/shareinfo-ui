@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Share Info - All Details</title>
+    <title>Share Info - Search</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -34,7 +43,7 @@
             border-radius: 1rem;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
             width: 100%;
-            max-width: 600px; /* Slightly wider for potential list data */
+            max-width: 600px;
             transition: all 0.3s ease;
         }
 
@@ -46,22 +55,8 @@
             text-align: center;
         }
 
-        .nav-links {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
 
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s;
-        }
 
-        .nav-links a:hover {
-            color: var(--text);
-        }
 
         .input-group {
             display: flex;
@@ -176,23 +171,59 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+    
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s, border-color 0.2s;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid transparent;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+        
+        .nav-links a.active {
+            color: var(--text);
+            border-bottom: 1px solid var(--primary);
+        }
     </style>
 </head>
 <body>
+    <div style="position: fixed; top: 0; left: 0; right: 0; text-align: center; padding: 0.5rem; font-size: 0.875rem; color: var(--text-muted); background-color: rgba(30, 41, 59, 0.8); backdrop-filter: blur(4px); z-index: 1000; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+        🚧 BETA / TESTING ENVIRONMENT - Data is for testing purposes only 🚧
+    </div>
     <div class="container">
-        <div class="nav-links" style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap;">
+                <div class="nav-links">
             <a href="index.html">Lookup</a>
             <a href="add-user.html">Add User</a>
             <a href="update-user.html">Update User</a>
-            <a href="all-users.html" style="color: var(--text); border-bottom: 1px solid var(--primary);">All Data</a>
+            <a href="all-users.html">All Data</a>
             <a href="resume.html">Resume</a>
+            <a href="search.html" class="active">Search</a>
+            <a href="#" onclick="logout()" style="color: var(--danger); margin-left: auto;">Logout</a>
         </div>
         
-        <h1>All Data Information</h1>
+        <h1>Search Profiles</h1>
         
+        <form onsubmit="event.preventDefault(); performSearch();">
+            <div class="input-group">
+                <input type="text" id="searchInput" placeholder="Search skills, schools, projects, companies..." required>
+                <button type="submit" id="searchBtn">Search</button>
+            </div>
+        </form>
 
-        
-        <div id="loading" class="hidden">Fetching records...</div>
+        <div id="loading" class="hidden">Searching records...</div>
         <div id="error" class="hidden"></div>
         
         <div id="resultsContainer" class="hidden">
@@ -201,20 +232,20 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const API_BASE_URL = 'https://shareinfo-backend-926695450073.us-central1.run.app';
 
-        // Automatically fetch data when page loads
-        document.addEventListener('DOMContentLoaded', fetchAllInfo);
+        async function performSearch() {
+            const query = document.getElementById('searchInput').value.trim();
+            if (!query) return;
 
-        async function fetchAllInfo() {
             // Reset UI
             hideElement('error');
             hideElement('resultsContainer');
             showElement('loading');
+            document.getElementById('searchBtn').disabled = true;
 
             try {
-                // Modified to fetch all users data based on REST conventions
-                const response = await fetch(`${API_BASE_URL}/users/`, {
+                const response = await fetch(`${API_BASE_URL}/search/?q=${encodeURIComponent(query)}`, {
                     method: 'GET',
                     headers: {
                         'accept': 'application/json'
@@ -229,12 +260,13 @@
                 renderData(data);
             } catch (err) {
                 if (err.message.includes('Failed to fetch')) {
-                    showError('Failed to connect to backend on port 8000. Ensure server is running and CORS is enabled.');
+                    showError('Failed to connect to backend on port 9000. Ensure server is running and CORS is enabled.');
                 } else {
                     showError(err.message);
                 }
             } finally {
                 hideElement('loading');
+                document.getElementById('searchBtn').disabled = false;
             }
         }
 
@@ -242,20 +274,17 @@
             const container = document.getElementById('resultsContainer');
             container.innerHTML = '';
             
-            // Determine if the backend returned a list of items or a single detail object
             if (Array.isArray(data)) {
                 if (data.length === 0) {
-                    container.innerHTML = '<div style="text-align:center; color: var(--text-muted)">No items found.</div>';
+                    container.innerHTML = '<div style="text-align:center; color: var(--text-muted)">No matching users found.</div>';
                 } else {
+                    // Result data is a list of UserAllInfoResponse
                     data.forEach(item => {
-                        container.appendChild(createCard(item));
+                        container.appendChild(createCard(item.user));
                     });
                 }
-            } else if (typeof data === 'object' && data !== null) {
-                container.appendChild(createCard(data));
             } else {
-                // Fallback for simple scalar responses
-                container.innerHTML = `<div class="user-card">${data}</div>`;
+                container.innerHTML = '<div style="text-align:center; color: var(--text-muted)">Unexpected response format.</div>';
             }
             
             showElement('resultsContainer');
@@ -265,7 +294,6 @@
             const card = document.createElement('div');
             card.className = 'user-card';
             
-            // Extract and prominently display the ID
             const userId = obj.id || obj.user_id || obj.userid;
             if (userId !== undefined) {
                 const header = document.createElement('div');
@@ -280,7 +308,6 @@
             }
             
             for (const key in obj) {
-                // Skip rendering the ID again in the normal rows
                 if (key === 'id' || key === 'user_id' || key === 'userid') continue;
 
                 if (obj[key] !== undefined && obj[key] !== null) {
@@ -294,13 +321,7 @@
                     const value = document.createElement('span');
                     value.className = 'info-value';
                     
-                    if (Array.isArray(obj[key])) {
-                        value.textContent = obj[key].join(', ');
-                    } else if (typeof obj[key] === 'object') {
-                        value.textContent = JSON.stringify(obj[key], null, 2);
-                    } else {
-                        value.textContent = obj[key];
-                    }
+                    value.textContent = obj[key];
                     
                     row.appendChild(label);
                     row.appendChild(value);
@@ -319,17 +340,18 @@
                 eduButton.href = `resume.html?userId=${userId}`;
                 eduButton.textContent = 'View Resume';
                 eduButton.style.display = 'inline-block';
-                eduButton.style.backgroundColor = 'transparent';
-                eduButton.style.color = 'var(--text)';
-                eduButton.style.padding = '0.4rem 0.8rem';
+                eduButton.style.backgroundColor = 'var(--primary)';
+                eduButton.style.color = 'white';
+                eduButton.style.padding = '0.5rem 1rem';
                 eduButton.style.borderRadius = '0.5rem';
                 eduButton.style.textDecoration = 'none';
-                eduButton.style.border = '1px solid var(--primary)';
-                eduButton.style.fontSize = '0.85rem';
+                eduButton.style.fontSize = '0.9rem';
+                eduButton.style.fontWeight = '500';
                 eduButton.style.transition = 'all 0.2s';
+                eduButton.style.marginTop = '0.5rem';
 
-                eduButton.onmouseover = () => { eduButton.style.backgroundColor = 'var(--primary)'; };
-                eduButton.onmouseout = () => { eduButton.style.backgroundColor = 'transparent'; };
+                eduButton.onmouseover = () => { eduButton.style.backgroundColor = 'var(--primary-hover)'; };
+                eduButton.onmouseout = () => { eduButton.style.backgroundColor = 'var(--primary)'; };
 
                 actionRow.appendChild(eduButton);
                 card.appendChild(actionRow);
@@ -350,8 +372,6 @@
         function hideElement(id) {
             document.getElementById(id).classList.add('hidden');
         }
-
-
     </script>
 </body>
 </html>

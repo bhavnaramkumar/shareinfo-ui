@@ -3,6 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Share Info - User Resume</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -49,24 +58,8 @@
             text-align: center;
         }
 
-        .nav-links {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
 
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.875rem;
-            transition: color 0.2s;
-        }
 
-        .nav-links a:hover {
-            color: var(--text);
-        }
 
         .input-group {
             display: flex;
@@ -249,17 +242,48 @@
                 transform: translateY(0);
             }
         }
+    
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s, border-color 0.2s;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid transparent;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+        
+        .nav-links a.active {
+            color: var(--text);
+            border-bottom: 1px solid var(--primary);
+        }
     </style>
 </head>
 
 <body>
+    <div style="position: fixed; top: 0; left: 0; right: 0; text-align: center; padding: 0.5rem; font-size: 0.875rem; color: var(--text-muted); background-color: rgba(30, 41, 59, 0.8); backdrop-filter: blur(4px); z-index: 1000; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+        🚧 BETA / TESTING ENVIRONMENT - Data is for testing purposes only 🚧
+    </div>
     <div class="container">
-        <div class="nav-links">
+                <div class="nav-links">
             <a href="index.html">Lookup</a>
             <a href="add-user.html">Add User</a>
             <a href="update-user.html">Update User</a>
             <a href="all-users.html">All Data</a>
-            <a href="resume.html" style="color: var(--text); border-bottom: 1px solid var(--primary);">Resume</a>
+            <a href="resume.html" class="active">Resume</a>
+            <a href="search.html">Search</a>
+            <a href="#" onclick="logout()" style="color: var(--danger); margin-left: auto;">Logout</a>
         </div>
 
         <h1>User Resume</h1>
@@ -277,13 +301,60 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8000';
+        const API_BASE_URL = 'https://shareinfo-backend-926695450073.us-central1.run.app';
 
-        // Auto-run if URL has ?userId=XY
-        document.addEventListener('DOMContentLoaded', () => {
+        // Auto-run if URL has ?userId=XY or ?name=Name
+        document.addEventListener('DOMContentLoaded', async () => {
             const urlParams = new URLSearchParams(window.location.search);
             const passedId = urlParams.get('userId');
-            if (passedId) {
+            const passedName = urlParams.get('name');
+            const isShared = urlParams.get('share') === 'true';
+            
+            if (isShared) {
+                // Hide normal app navigation & search logic for a clean shared view
+                const navLinks = document.querySelector('.nav-links');
+                const h1 = document.querySelector('h1');
+                const inputGroup = document.querySelector('.input-group');
+                
+                if (navLinks) navLinks.classList.add('hidden');
+                if (h1) h1.classList.add('hidden');
+                if (inputGroup) inputGroup.classList.add('hidden');
+                
+                // Optionally remove container padding/shadow for a cleaner full-page resume
+                const container = document.querySelector('.container');
+                if (container) {
+                    container.style.boxShadow = 'none';
+                    container.style.backgroundColor = 'transparent';
+                    container.style.padding = '0';
+                    container.style.maxWidth = '800px';
+                }
+            }
+            
+            if (passedName) {
+                // Resolve name to ID by fetching all users first
+                showElement('loading');
+                try {
+                    const res = await fetch(`${API_BASE_URL}/users/`, { headers: { 'accept': 'application/json' } });
+                    if (!res.ok) throw new Error('Failed to fetch user list to resolve name');
+                    const users = await res.json();
+                    
+                    const matchedUser = users.find(u => {
+                        const fname = u.first_name || '';
+                        return fname.toLowerCase() === passedName.toLowerCase();
+                    });
+                    
+                    if (matchedUser) {
+                        const resolvedId = matchedUser.id || matchedUser.user_id || matchedUser.userid;
+                        document.getElementById('userId').value = resolvedId;
+                        fetchResume();
+                    } else {
+                        throw new Error(`Could not find a user with the first name "${passedName}"`);
+                    }
+                } catch (err) {
+                    showError(err.message);
+                    hideElement('loading');
+                }
+            } else if (passedId) {
                 document.getElementById('userId').value = passedId;
                 fetchResume();
             }
@@ -343,7 +414,7 @@
                 renderResume(userId, userInfo, skills, exp, projects, edu);
             } catch (err) {
                 if (err.message.includes('fetch')) {
-                    showError('Failed to connect. Is FastAPI running on port 8000?');
+                    showError('Failed to connect. Is FastAPI running on port 9000?');
                 } else {
                     showError(err.message);
                 }
@@ -366,7 +437,24 @@
             let html = '';
 
             // --- HDR: USER INFO ---
+            // Construct the shareable URL based on first name if available, otherwise fallback to ID
+            const shareName = userInfo && userInfo.first_name ? encodeURIComponent(userInfo.first_name.toLowerCase()) : null;
+            const shareableUrl = shareName 
+                ? `${window.location.origin}${window.location.pathname}?share=true&name=${shareName}`
+                : `${window.location.origin}${window.location.pathname}?share=true&userId=${userId}`;
+            
             html += `<div class="resume-header">`;
+            
+            // Show shareable link on the page (hide if already in shared mode)
+            const urlParams = new URLSearchParams(window.location.search);
+            const isShared = urlParams.get('share') === 'true';
+            
+            if (!isShared) {
+                html += `<div style="margin-bottom: 1.5rem; background: rgba(0,0,0,0.2); padding: 0.75rem 1rem; border-radius: 0.5rem; display: flex; align-items: center; gap: 0.75rem; border: 1px solid rgba(255,255,255,0.05);">
+                    <span style="color: var(--primary); font-size: 0.85rem; font-weight: 600; white-space: nowrap;">Share Link:</span>
+                    <input type="text" readonly value="${shareableUrl}" style="flex: 1; background: transparent; border: none; color: var(--text-muted); font-size: 0.85rem; padding: 0; outline: none; margin: 0; cursor: text;" onclick="this.select()">
+                </div>`;
+            }
             if (userInfo) {
                 const name = [userInfo.first_name, userInfo.last_name].filter(Boolean).join(' ') || `Candidate Profile`;
                 html += `<div class="resume-name">${name}</div>`;

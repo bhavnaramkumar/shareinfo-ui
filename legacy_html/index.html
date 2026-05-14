@@ -3,6 +3,15 @@
 
 <head>
     <meta charset="UTF-8">
+    <script>
+        if (sessionStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Share Info - User Lookup</title>
     <!-- Use a modern font -->
@@ -155,17 +164,48 @@
             font-weight: 500;
             word-break: break-all;
         }
+    
+        .nav-links {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s, border-color 0.2s;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid transparent;
+        }
+
+        .nav-links a:hover {
+            color: var(--text);
+        }
+        
+        .nav-links a.active {
+            color: var(--text);
+            border-bottom: 1px solid var(--primary);
+        }
     </style>
 </head>
 
 <body>
+    <div style="position: fixed; top: 0; left: 0; right: 0; text-align: center; padding: 0.5rem; font-size: 0.875rem; color: var(--text-muted); background-color: rgba(30, 41, 59, 0.8); backdrop-filter: blur(4px); z-index: 1000; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+        🚧 BETA / TESTING ENVIRONMENT - Data is for testing purposes only 🚧
+    </div>
     <div class="container">
-        <div class="nav-links" style="display: flex; justify-content: space-between; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap;">
-            <a href="index.html" style="color: var(--text); border-bottom: 1px solid var(--primary);">Lookup</a>
-            <a href="add-user.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">Add User</a>
-            <a href="update-user.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">Update User</a>
-            <a href="all-users.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">All Data</a>
-            <a href="resume.html" style="color: var(--text-muted); text-decoration: none; font-size: 0.875rem; transition: color 0.2s;">Resume</a>
+                <div class="nav-links">
+            <a href="index.html" class="active">Lookup</a>
+            <a href="add-user.html">Add User</a>
+            <a href="update-user.html">Update User</a>
+            <a href="all-users.html">All Data</a>
+            <a href="resume.html">Resume</a>
+            <a href="search.html">Search</a>
+            <a href="#" onclick="logout()" style="color: var(--danger); margin-left: auto;">Logout</a>
         </div>
         <h1>User Lookup</h1>
         <div class="input-group">
@@ -196,7 +236,7 @@
         // Use your FastAPI backend URL here (Based on the curl reference, we use 127.0.0.1)
         // I noticed from previous conversations you were working on a FastAPI backend 
         // with User models and schemas, this URL assumes that's where the backend is hosted.
-        const API_BASE_URL = 'http://127.0.0.1:8000';
+        const API_BASE_URL = 'https://shareinfo-backend-926695450073.us-central1.run.app';
 
         async function fetchUserInfo() {
             const userIdInput = document.getElementById('userId');
@@ -235,7 +275,7 @@
                 // Note: If you get a "Failed to fetch" error it's likely a CORS issue,
                 // Make sure your FastAPI backend uses CORSMiddleware to allow this origin
                 if (err.message.includes('Failed to fetch')) {
-                    showError('Failed to connect to the server. Is the FastAPI backend running (on port 8000) and configured for CORS?');
+                    showError('Failed to connect to the server. Is the FastAPI backend running (on port 9000) and configured for CORS?');
                 } else {
                     showError(err.message);
                 }
@@ -381,7 +421,7 @@
             } catch (err) {
                 const errDiv = document.getElementById('deleteError');
                 if (err.message.includes('Failed to fetch')) {
-                    errDiv.innerHTML = 'Network Error. Double check backend is running on 8000. If CORS is failing, make sure allow_methods=["*"] is set serverside.';
+                    errDiv.innerHTML = 'Network Error. Double check backend is running on 9000. If CORS is failing, make sure allow_methods=["*"] is set serverside.';
                 } else {
                     errDiv.textContent = err.message;
                 }
