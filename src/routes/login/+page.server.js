@@ -15,7 +15,7 @@ export const actions = {
 		}
 
 		if (username !== env.ADMIN_USERNAME || password !== env.ADMIN_PASSWORD) {
-			return fail(401, { error: 'Invalid username or password.' });
+			return fail(401, { error: `Invalid. Expected pass length: ${env.ADMIN_PASSWORD?.length}, got pass length: ${password?.length}. Expected user: '${env.ADMIN_USERNAME}', got user: '${username}'` });
 		}
 
 		cookies.set('session', env.SESSION_SECRET, {
